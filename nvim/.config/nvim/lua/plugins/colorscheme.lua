@@ -5,7 +5,7 @@ return {
     priority = 1000,
     opts = {
       style = "dark",
-      transparent = false,
+      transparent = true,
       italic_comments = true,
       group_overrides = {
         -- 전처리기 키워드 (#define, #include, #ifdef 등): 회색

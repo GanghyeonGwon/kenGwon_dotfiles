@@ -37,18 +37,20 @@ TARGET_IP="192.168.0.99"
 REMOTE="kenGwon-ObsidianVault:Obsidian_Vault"
 MOUNT_DIR="$HOME/remote-obsidian-vault"
 
-if ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -Fxq "$TARGET_IP"; then
-    if mountpoint -q "$MOUNT_DIR"; then
-        if ls "$MOUNT_DIR" >/dev/null 2>&1; then
-            echo "[obsidian] 이미 마운트되어 있습니다: $MOUNT_DIR"
-        else
-            echo "[obsidian] 끊어진 마운트 감지, 해제 후 다시 마운트합니다."
-            fusermount -uz "$MOUNT_DIR"
-            rclone mount "$REMOTE" "$MOUNT_DIR" --daemon --vfs-cache-mode full
-        fi
+obsidian_mount() {
+    if rclone mount "$REMOTE" "$MOUNT_DIR" --daemon --vfs-cache-mode full; then
+        echo "[obsidian] 마운트 성공: $MOUNT_DIR"
     else
+        echo "[obsidian] 마운트 실패: $MOUNT_DIR"
+    fi
+}
+
+if ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -Fxq "$TARGET_IP"; then
+    if ! mountpoint -q "$MOUNT_DIR"; then
         mkdir -p "$MOUNT_DIR"
-        rclone mount "$REMOTE" "$MOUNT_DIR" --daemon --vfs-cache-mode full \
-            && echo "[obsidian] 마운트 완료: $MOUNT_DIR"
+        obsidian_mount
+    elif ! ls "$MOUNT_DIR" >/dev/null 2>&1; then
+        fusermount -uz "$MOUNT_DIR"
+        obsidian_mount
     fi
 fi

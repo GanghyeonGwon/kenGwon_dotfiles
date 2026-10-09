@@ -32,3 +32,24 @@ alias cat='bat'
 alias bmake='bear --append -- make'
 alias bmakef='bear -- make'          # f = fresh
 
+# 192.168.0.166 옵시디언 볼트 마운트 (IP가 192.168.0.99일 때만)
+TARGET_IP="192.168.0.99"
+REMOTE="kenGwon-ObsidianVault:Obsidian_Vault"
+MOUNT_DIR="$HOME/remote-obsidian-vault"
+
+if ! ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -Fxq "$TARGET_IP"; then
+    echo "[obsidian] 현재 IP가 $TARGET_IP 가 아니므로 마운트하지 않습니다."
+elif mountpoint -q "$MOUNT_DIR"; then
+    if ls "$MOUNT_DIR" >/dev/null 2>&1; then
+        echo "[obsidian] 이미 마운트되어 있습니다: $MOUNT_DIR"
+    else
+        echo "[obsidian] 끊어진 마운트 감지, 해제 후 다시 마운트합니다."
+        fusermount -uz "$MOUNT_DIR"
+        rclone mount "$REMOTE" "$MOUNT_DIR" --daemon --vfs-cache-mode full
+    fi
+else
+    mkdir -p "$MOUNT_DIR"
+    rclone mount "$REMOTE" "$MOUNT_DIR" --daemon --vfs-cache-mode full \
+        && echo "[obsidian] 마운트 완료: $MOUNT_DIR"
+fi
+

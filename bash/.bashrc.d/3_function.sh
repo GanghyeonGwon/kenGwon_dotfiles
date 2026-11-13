@@ -61,3 +61,64 @@ fi
 EOF
 }
 
+
+# ── 192.168.0.166 옵시디언 볼트 (rclone SMB) 수동 마운트 ──────────────────────
+# 셸 시작 시 자동 마운트하지 않는다. 원격지가 망에서 사라지면 마운트가 응답 없는
+# 파일시스템이 되어 df/셸 시작이 멈추기 때문. 필요할 때만 직접 붙이고 뗀다.
+#   obsidian_mount         원격지 살아있을 때만 마운트
+#   obsidian_umount        정상 해제
+#   obsidian_umount_force  원격지가 사라져 멈춘 마운트를 강제로 끊음
+# 마운트 여부는 /proc/mounts로만 판단한다 (마운트 디렉터리를 건드리면 멈출 수 있음).
+OBSIDIAN_HOST="192.168.0.166"
+OBSIDIAN_REMOTE="kenGwon-ObsidianVault:Obsidian_Vault"
+OBSIDIAN_MOUNT_DIR="$HOME/remote-obsidian-vault"
+
+_obsidian_is_mounted() {
+  awk -v d="$OBSIDIAN_MOUNT_DIR" '$2 == d { found = 1 } END { exit !found }' /proc/mounts
+}
+
+obsidian_mount() {
+  if _obsidian_is_mounted; then
+    echo "[obsidian] 이미 마운트되어 있음: $OBSIDIAN_MOUNT_DIR"
+    return 0
+  fi
+  if ! timeout 1 bash -c "</dev/tcp/$OBSIDIAN_HOST/445" 2>/dev/null; then
+    echo "[obsidian] 원격지 응답 없음 ($OBSIDIAN_HOST:445), 마운트하지 않음"
+    return 1
+  fi
+  mkdir -p "$OBSIDIAN_MOUNT_DIR"
+  if rclone mount "$OBSIDIAN_REMOTE" "$OBSIDIAN_MOUNT_DIR" --daemon \
+      --vfs-cache-mode full --contimeout 5s --timeout 15s; then
+    echo "[obsidian] 마운트 성공: $OBSIDIAN_MOUNT_DIR"
+  else
+    echo "[obsidian] 마운트 실패: $OBSIDIAN_MOUNT_DIR"
+    return 1
+  fi
+}
+
+obsidian_umount() {
+  if ! _obsidian_is_mounted; then
+    echo "[obsidian] 마운트되어 있지 않음"
+    return 0
+  fi
+  if timeout 5 fusermount -u "$OBSIDIAN_MOUNT_DIR"; then
+    echo "[obsidian] 해제 완료"
+  else
+    echo "[obsidian] 정상 해제 실패. 멈춘 상태라면 obsidian_umount_force 를 사용"
+    return 1
+  fi
+}
+
+obsidian_umount_force() {
+  # lazy unmount: 응답 없는 파일시스템도 즉시 마운트 트리에서 떼어냄 (df 등 즉시 복구)
+  if _obsidian_is_mounted; then
+    fusermount -uz "$OBSIDIAN_MOUNT_DIR" && echo "[obsidian] 마운트 강제 해제"
+  fi
+  # 남아있는 rclone 데몬 정리 (TERM 후 2초 내 안 죽으면 KILL)
+  if pkill -f -- "rclone mount $OBSIDIAN_REMOTE"; then
+    sleep 2
+    pkill -KILL -f -- "rclone mount $OBSIDIAN_REMOTE"
+    echo "[obsidian] rclone 프로세스 종료"
+  fi
+  # 미업로드 쓰기는 ~/.cache/rclone/vfs 에 남아 다음 마운트 때 업로드됨
+}

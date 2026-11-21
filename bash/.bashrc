@@ -16,6 +16,20 @@ case ":$PATH:" in
     *":$HOME/.local/bin:"*) ;;
     *) export PATH="$HOME/.local/bin:$PATH" ;;
 esac
+# mise 로 관리하는 툴의 shims 는 ~/.local/bin 바로 뒤에 끼워 넣는다(예전 우선순위 유지).
+# mise 가 없는 머신(shims 디렉토리 없음)에서는 아무 일도 하지 않는다.
+__mise_shims="$HOME/.local/share/mise/shims"
+if [ -d "$__mise_shims" ]; then
+    case ":$PATH:" in
+        *":$__mise_shims:"*) ;;
+        *)  __lb=":$HOME/.local/bin:"
+            PATH=":$PATH:"
+            PATH="${PATH/"$__lb"/"$__lb$__mise_shims:"}"
+            PATH="${PATH#:}"; PATH="${PATH%:}"; export PATH
+            unset __lb ;;
+    esac
+fi
+unset __mise_shims
 # ─────────────────────────────────────────────────────────────────────────────
 
 # If not running interactively, don't do anything

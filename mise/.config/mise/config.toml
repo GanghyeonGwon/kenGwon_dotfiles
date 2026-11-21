@@ -1,0 +1,20 @@
+# mise 로 관리하는 CLI 툴 (노트북·빌드서버 공통 선언)
+#
+# 원칙: "업데이트를 누가 하나"로 나눈다.
+#   - 스스로 업데이트하는 툴(claude, herdr, mise 자신) → ~/.local/bin 에 직접. 여기 넣지 않는다.
+#   - GitHub 릴리즈 단일 바이너리 → 여기(mise). 버전은 이 파일, 체크섬은 mise.lock 이 고정.
+#   - 직접 빌드하거나 rpm 을 푼 것 → ~/.local/stow (원본은 ~/.local/_tarball)
+#
+# 버전은 2026-11-21 빌드서버에 깔려 있던 것과 동일하게 고정했다(바이너리 sha256 일치 확인).
+# 올릴 때: 버전 수정 → mise install → mise lock --global → 커밋
+
+[tools]
+ripgrep = "14.1.1"
+fd      = "10.3.0"
+bat     = "0.26.0"
+eza     = "0.23.4"
+lazygit = "0.55.1"
+zoxide  = "0.9.8"
+
+[settings]
+lockfile = true

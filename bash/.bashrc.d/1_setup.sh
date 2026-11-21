@@ -6,7 +6,13 @@ case ":$PATH:" in
 esac
 
 # npm 패키지 매니저로 깐 모듈들 PATH 잡기
-export PATH="$PATH:$HOME/.nvm/versions/node/v22.20.0/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/.bin"
+# (셸을 중첩해 열 때마다 PATH 에 중복으로 쌓이지 않도록 가드)
+__mmdc="$HOME/.nvm/versions/node/v22.20.0/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/.bin"
+case ":$PATH:" in
+    *":$__mmdc:"*) ;;
+    *) export PATH="$PATH:$__mmdc" ;;
+esac
+unset __mmdc
 
 # zoxide 사용을 위한 eval(cd에 대한 zoxide alias는 setup.sh에서 자체적으로 적용중임)
 eval "$(zoxide init bash)"

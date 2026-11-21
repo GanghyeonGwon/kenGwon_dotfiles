@@ -5,11 +5,11 @@
 # 공식 설치 경로인 `curl -fsSL https://herdr.dev/install.sh | sh` 를 쓰지 않는 이유:
 #   1) 버전을 고정하거나 롤백할 수 없다
 #   2) 설치 대상(빌드서버)이 망분리라 herdr.dev 로 나가지 못할 수 있다
-#   3) stow 레이아웃에 맞춰 버전별 디렉토리에 넣어야 한다
+#   3) 설치 전에 sha256 을 검증하고 싶다
 #
 # 사용법:
-#   ./install-herdr.sh                      # ~/.local/bin 에 설치 (WSL2, Arch 등 개인 머신)
-#   ./install-herdr.sh --stow               # ~/.local/stow/herdr-<ver>/bin 에 설치 후 stow
+#   ./install-herdr.sh                      # ~/.local/bin 에 설치 (권장: 노트북·빌드서버 공통)
+#   ./install-herdr.sh --stow               # ~/.local/stow/herdr-<ver>/bin 에 설치 후 stow (비권장, 아래 참고)
 #   ./install-herdr.sh --version 0.9.5      # 버전 고정
 #   ./install-herdr.sh --fetch-only         # 바이너리만 내려받음 (망 되는 쪽에서 실행)
 #   ./install-herdr.sh --offline <파일>     # 받아둔 바이너리로 설치 (망분리 서버에서 실행)
@@ -19,16 +19,24 @@
 #   ./install-herdr.sh --fetch-only
 #   scp _tarball/herdr-0.9.5-linux-x86_64 <빌드서버>:~/
 #   # 빌드서버에서 (dotfiles 를 pull 받은 뒤)
-#   ./scripts/install-herdr.sh --offline ~/herdr-0.9.5-linux-x86_64 --stow
+#   ./scripts/install-herdr.sh --offline ~/herdr-0.9.5-linux-x86_64
 #
-# 롤백:
-#   cd ~/.local/stow && stow -D herdr-<새버전> && stow herdr-<이전버전>
+# 기본 모드(~/.local/bin 직접 설치)를 권장하는 이유:
+#   herdr 는 `herdr update` 로 자기 바이너리를 제자리 교체한다. stow/mise 로 넣으면
+#   버전 디렉토리 안의 파일이 새 버전으로 덮여 버전 표기와 롤백이 깨진다.
+#   (0.9.5 의 mise 감지는 installs/herdr/<ver>/bin/herdr 경로만 인식해서
+#    현재 mise 의 설치 레이아웃과 맞지 않는다. 2026-11-21 실측)
+#   업데이트: herdr update   (pane 이 돌고 있으면 서버 재시작이 필요하니 idle 일 때)
+#   롤백:     _tarball 에 보관한 이전 바이너리로 --offline 재설치
+#
+# 다운로드 캐시 위치: 기본은 저장소의 _tarball/ (gitignore 됨).
+#   빌드서버 관례(~/.local/_tarball)를 따르려면 HERDR_CACHE_DIR=~/.local/_tarball
 
 set -euo pipefail
 
 MANIFEST_URL="https://herdr.dev/latest.json"
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CACHE_DIR="$DOTFILES_DIR/_tarball"
+CACHE_DIR="${HERDR_CACHE_DIR:-$DOTFILES_DIR/_tarball}"
 
 MODE="direct"      # direct | stow
 VERSION=""

@@ -29,7 +29,7 @@ bash / tmux / nvim / herdr / mise / git / lazygit 설정. root 권한 없이 `$H
 |---|---|---|---|
 | 1. 툴이 직접 관리 | claude, herdr, mise, rclone | `~/.local/bin` (실제 파일) | `claude update`, `herdr update`, `mise self-update`, `rclone selfupdate` |
 | 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim, tree-sitter, delta) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
-| 3. stow | 직접 빌드하거나 rpm 을 푼 것, mise 에 없는 단일 바이너리·AppImage (magick, tectonic, wezterm) | `~/.local/stow/<이름-버전>`, 원본은 `~/.local/_tarball` | 새 버전 디렉토리 stow, 이전 버전 `stow -D` |
+| 3. stow | 직접 빌드하거나 rpm 을 푼 것, mise 에 없는 단일 바이너리·AppImage (magick, tectonic, wezterm, tmux) | `~/.local/stow/<이름-버전>`, 원본은 `~/.local/_tarball` | 새 버전 디렉토리 stow, 이전 버전 `stow -D` |
 
 ### `~/.local` 디렉토리 역할
 
@@ -158,10 +158,13 @@ Claude Code 내부 서브에이전트와 달리 helper 가 pane 으로 보이고
 
 ## 알려진 문제
 
-- 빌드서버의 시스템 tmux(`tmux-3.3a-13.20230918git…el10`, `tmux -V` = next-3.4)는 `tmux capture-pane` 을
-  실행하면 서버가 core dump 로 죽는다. 빈 설정(`-f /dev/null`)에서도, pane 내용과 상관없이 재현된다.
-  평소 사용(attach, 분할, popup, resurrect 저장)에서는 이 명령을 쓰지 않는다.
-  `@resurrect-capture-pane-contents` 는 켜지 않는다.
+- (해결, 2026-11-21) 빌드서버의 시스템 tmux(`/usr/bin/tmux`, `tmux-3.3a-13.20230918git…el10`, `tmux -V` = next-3.4)는
+  `tmux capture-pane` 을 실행하면 서버가 core dump 로 죽는다. 빈 설정(`-f /dev/null`)에서도 재현된다.
+  → `scripts/build-tmux.sh` 로 직접 빌드한 tmux 3.8 을 `~/.local/bin/tmux` 로 쓴다(PATH 에서 `/usr/bin` 보다 앞).
+  3.8 에서는 capture-pane 20회 반복, resurrect 의 pane 내용 저장·복원까지 정상이다.
+  `/usr/bin/tmux` 는 그대로 남아 있으니 **그 경로로 직접 부를 때는 여전히 capture-pane 을 쓰지 않는다.**
+  - 3.8 에서는 tpm 이 시작할 때 `unknown variable: TMUX_PLUGIN_MANAGER_PATH` 가 메시지 기록에 남는다.
+    tpm 이 변수가 있는지 먼저 물어보는 정상 동작이라 무시한다(3.3a 는 이 실패를 기록하지 않았을 뿐).
 
 - **headless/스크립트로 띄운 nvim 도 종료할 때 그 디렉토리의 persistence 세션을 덮어쓴다.**
   persistence 는 파일을 연 nvim 이 끝날 때(VimLeavePre) 현재 디렉토리 세션을 저장하기 때문이다.
@@ -205,6 +208,13 @@ Claude Code 내부 서브에이전트와 달리 helper 가 pane 으로 보이고
   정리한 뒤 실행했다. 대화형·로그인·비대화형 SSH 셸 모두 shims 로 툴을 찾는다.
   되돌리기: `ln -s ../share/mise/shims/<툴> ~/.local/bin/<툴>`
 - 2026-11-21: `mise prune` 으로 옛 버전 7개(neovim 0.11.4, rg 14.1.1 등)를 지웠다. 되돌리려면 버전을 되돌리고 `mise install`.
+- 2026-11-21: tmux 를 시스템 3.3a 스냅샷에서 직접 빌드한 3.8 로 바꿨다(`scripts/build-tmux.sh`).
+  - libevent 2.1.13-stable 을 정적으로 넣었다(libevent-devel 이 없고 root 도 없다). 실행에 필요한 외부 라이브러리는 libtinfo 뿐.
+  - 원본은 `~/.local/_tarball`(GitHub 릴리스 sha256 대조), 빌드 트리는 `~/.local/src`, 설치는 `~/.local/stow/tmux-3.8`.
+  - 켜기 전에 별도 소켓(`-L`)으로 검증했다: 지금 `~/.tmux.conf` 와 플러그인 3개, popup, capture-pane, resurrect 저장·복원.
+    resurrect 는 테스트용 저장 폴더를 따로 써서 실제 저장본(`last`, 650개)은 건드리지 않았다.
+  - 교체 당시 실행 중인 tmux 서버는 없었다. 로그인·대화형·SSH 비대화형 셸 모두 `~/.local/bin/tmux` 3.8 을 쓴다.
+  - 되돌리기: `stow -D -d ~/.local/stow -t ~/.local tmux-3.8` (`/usr/bin/tmux` 로 돌아간다)
 - herdr 롤백: `scripts/install-herdr.sh --offline ~/.local/_tarball/herdr-<이전버전>-linux-x86_64`
 - 2026-11-21: nvim 을 0.11.4 에서 0.12.6 으로 올리고 `:Lazy update` 로 플러그인 23개를 갱신했다(LazyVim 16.0.2).
   - LazyVim 은 nvim < 0.12 일 때만 nvim-treesitter 를 `7caec274` 로 고정한다. 0.12 에서는 고정이 풀려 최신 main 을 따른다.

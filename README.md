@@ -101,3 +101,28 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
   Claude 원격 세션)가 남아 있어 아직 두었다. 그 프로세스들이 사라진 뒤(재부팅 등)
   `~/.local/_retired/20261121/RETIRE_COMPAT_LINKS.sh` 로 지운다(남아 있으면 스스로 거부한다).
 - herdr 롤백: `scripts/install-herdr.sh --offline ~/.local/_tarball/herdr-<이전버전>-linux-x86_64`
+
+## 노트북 이력 메모
+
+- 2026-11-21: 노트북(WSL2)을 빌드서버 기준으로 맞췄다. mise(v2026.10.25)를 도입하고
+  rg/fd/bat/eza/lazygit/zoxide/neovim/tree-sitter 를 mise 로 이전했다.
+  `mise.lock` 은 빌드서버 것과 이미 일치해서 한 줄도 바뀌지 않았다.
+  - apt 판을 쓰던 rg(14.1.0 → 14.1.1), bat(0.24.0 → 0.26.0)은 shims 우선순위로 자동 교체된다.
+  - `~/.local/bin/<툴>` 은 mise shim 으로 가는 링크로 남겨 두었다. 교체는 `ln -s … tmp && mv -T tmp <경로>`
+    로 원자적으로 해서 떠 있던 tmux 셸이 깨지지 않았다. 옛 파일은 `~/.local/_retired/20261121/` + `ROLLBACK.sh`.
+- 2026-11-21: nvim 을 0.12.0 에서 mise neovim 0.11.4 로 **내렸다**. 노트북이 서버보다 앞서 있어서
+  lazy 가 lock 을 계속 다시 쓰던 것이 원인이었다. 내린 뒤 `:Lazy! restore` 로 42개를 복원했고
+  lock 해시가 전후 동일하다. checkhealth 는 오류 6→5, 경고 17→16 으로 줄었다
+  (차이는 tree-sitter CLI 설치로 해소된 오류 1개 + "0.12.6 업데이트 가능" 경고 1개).
+- 2026-11-21: 노트북 `~/.local` 을 3층 원칙대로 정리했다.
+  - `src/` 로 옮긴 빌드 트리: fd-v10.3.0, lua-5.4.6, luarocks-3.12.2, nvim-linux-x86_64, ghostscript-10.06.0
+  - stow 패키지 8개: ghostscript-10.06.0, ghostty-1.2.2, wezterm-20240203, tectonic-0.15.0,
+    lua-5.4.6, luarocks-3.12.2, magick-7.1.2-5, win32yank-x64
+  - `bin/` 에 남은 실제 파일은 herdr, mise(1층)와 vba_extract.py(버전 없는 헬퍼 스크립트)뿐이다.
+- ghostscript 는 ROMFS 빌드라 **재배치해도 된다.** 바이너리에 `~/.local/ghostscript-10.06.0-local/` prefix 가
+  박혀 있지만 리소스를 `%rom%Resource/...` 에서 읽으므로 그 경로가 없어도 동작한다.
+  전혀 다른 경로에 복사해 렌더한 PNG 가 바이트 단위로 동일한 것을 확인하고 stow 로 옮겼다.
+  옮기면서 `ps2pdf`, `dvipdf`, `pdf2ps` 등 래퍼 20여 개가 처음으로 PATH 에 노출됐다.
+- stow 주의: `~/.config/herdr` 나 `~/.local/bin` 처럼 **없는 디렉토리를 대상으로 stow 하면 tree folding 이
+  일어나 디렉토리 자체가 패키지로 가는 링크가 된다.** herdr 는 그 밑에 로그·소켓을 쓰므로 치명적이다.
+  `--no-folding` 을 쓰거나 대상 디렉토리를 미리 만들 것. 노트북에서 실측으로 재현했다.

@@ -133,6 +133,21 @@ mason 이 nvim 을 열 때 자동으로 설치한다. 설치에는 node(npm)와 
   손으로 고쳐 보려면 `bitbake -c devshell <레시피>`, 소스를 계속 고칠 거면 `devtool modify <레시피>`.
 - `bitbake` 는 빌드 디렉토리에 잠금 파일을 잡는다. 빌드가 도는 중에는 `bitbake -e` 가 기다리거나 실패한다.
 
+## herdr 에이전트 skill (Claude Code)
+
+herdr 안에서 도는 Claude Code 가 herdr CLI 로 옆 pane 에 다른 에이전트(claude, codex 등)를 띄우고,
+일을 시키고(`agent prompt --wait`), 결과를 읽어 오게 하는 **herdr 공식 skill** 이다.
+Claude Code 내부 서브에이전트와 달리 helper 가 pane 으로 보이고, 사이드바·팝업 알림 대상이 된다.
+
+- 설치 위치: `~/.claude/skills/herdr/SKILL.md` (저장소 밖. 머신마다 따로 설치한다)
+- 설치·갱신: `mkdir -p ~/.claude/skills/herdr && herdr --skill > ~/.claude/skills/herdr/SKILL.md`
+  - `herdr --skill` 은 설치된 herdr 버전에 맞는 공식 사본을 출력한다(공식 저장소 `skills/herdr/SKILL.md` 와 동일).
+  - **`herdr update` 뒤에는 이 명령을 다시 실행한다.** 내용이 버전마다 바뀌어서 dotfiles 에 넣지 않았다.
+  - 공식 대안: `npx skills add herdrdev/herdr --skill herdr -g`
+- 쓰는 법: herdr 를 명시적으로 말할 때만 동작한다(skill 설명에 그렇게 정해져 있다). herdr pane 밖에서는 스스로 멈춘다.
+  예) "herdr 로 옆 pane 에 리뷰어 띄워서 지금 diff 검토시켜", "herdr 로 아래 pane 에서 빌드 돌리고 끝나면 로그 봐"
+- 2026-11-21 빌드서버에 설치(herdr 0.9.5). 시연: pane 분할 → `agent start helper --kind claude` → prompt → read → pane close.
+
 ## 알려진 문제
 
 - 빌드서버의 시스템 tmux(`tmux-3.3a-13.20230918git…el10`, `tmux -V` = next-3.4)는 `tmux capture-pane` 을

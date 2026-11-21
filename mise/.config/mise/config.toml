@@ -19,6 +19,7 @@ lazygit = "0.66.3"
 zoxide  = "0.10.0"
 neovim  = "0.12.6"
 tree-sitter = "0.26.13"   # nvim-treesitter(main) 요구: tree-sitter-cli >= 0.26.1
+delta   = "0.20.1"        # git diff pager. 0.21.x(2026-11-19)는 TUI 모드를 새로 넣은 큰 변경이라 보류
 
 [settings]
 lockfile = true

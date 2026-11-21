@@ -39,6 +39,11 @@ link "$DOTFILES_DIR/herdr/.config/herdr/config.toml" "$HOME/.config/herdr/config
 # mise 도 ~/.config/mise/ 아래에 다른 파일을 쓸 수 있으므로 파일 단위로 링크한다.
 link "$DOTFILES_DIR/mise/.config/mise/config.toml"   "$HOME/.config/mise/config.toml"
 link "$DOTFILES_DIR/mise/.config/mise/mise.lock"     "$HOME/.config/mise/mise.lock"
+# git 공통 설정(delta 등). ~/.config/git/ 에는 ignore 등 다른 파일이 있을 수 있어 파일 단위로 링크한다.
+# 머신별 설정(user.name/email 등)은 ~/.gitconfig 에 그대로 둔다(git 이 두 파일을 모두 읽는다).
+link "$DOTFILES_DIR/git/.config/git/config"          "$HOME/.config/git/config"
+# lazygit 은 상태를 ~/.local/state/lazygit 에 쓰지만, 안전하게 파일 단위로 링크한다.
+link "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml" "$HOME/.config/lazygit/config.yml"
 
 echo ""
 echo "Done. Re-login or run: source ~/.bashrc"
@@ -46,5 +51,5 @@ echo ""
 echo "herdr 바이너리는 별도로 설치해야 합니다 (이후 업데이트는 herdr update):"
 echo "  ./scripts/install-herdr.sh"
 echo ""
-echo "mise 로 관리하는 CLI 툴(rg, fd, bat, eza, lazygit, zoxide):"
+echo "mise 로 관리하는 CLI 툴(rg, fd, bat, eza, lazygit, zoxide, neovim, tree-sitter, delta):"
 echo "  mise 를 ~/.local/bin 에 설치한 뒤: mise install"

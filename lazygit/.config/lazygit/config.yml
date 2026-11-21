@@ -1,0 +1,9 @@
+# lazygit 설정 (노트북·빌드서버 공통, dotfiles 로 관리)
+# 전체 옵션: https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+git:
+  # diff 를 delta 로 그린다(git 쪽 delta 설정 ~/.config/git/config 의 [delta] 를 그대로 쓴다).
+  # | 키로 렌더러를 바꿔 가며 볼 수 있다. 두 번째는 git 기본 diff.
+  diffRenderers:
+    - command: delta --{{colorScheme}} --paging=never
+    - type: rawGit
+      name: default

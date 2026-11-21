@@ -1,6 +1,6 @@
 # kenGwon dotfiles
 
-bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서만 동작하도록 구성한다.
+bash / tmux / nvim / herdr / mise / git / lazygit 설정. root 권한 없이 `$HOME` 안에서만 동작하도록 구성한다.
 
 ## 배포 방식 (머신별)
 
@@ -11,13 +11,19 @@ bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서�
 
 `herdr`, `mise` 패키지는 반드시 `--no-folding` 으로 stow 한다. 이 두 툴은 `~/.config/<툴>/` 아래에
 로그·소켓·상태 파일을 쓰므로, 디렉토리째 링크되면(tree folding) 그 파일들이 저장소 안에 쌓인다.
+`git`, `lazygit` 패키지도 같은 이유로 `--no-folding`(파일 단위)으로 둔다.
+
+- `git` 패키지는 `~/.config/git/config` 하나다. 머신 공통 설정(delta pager 등)만 둔다.
+  git 은 이 파일과 `~/.gitconfig` 를 둘 다 읽고 같은 키는 `~/.gitconfig` 가 이긴다.
+  user.name/email, 인증, url 재작성처럼 머신마다 다른 것은 `~/.gitconfig` 에 두고 저장소에 넣지 않는다.
+- delta 가 PATH 에 없으면(오래된 프로세스, mise 미설치) git 은 예전처럼 `less` 로 보여 준다.
 
 ## `$HOME` 툴 배치 원칙: "업데이트를 누가 하나"
 
 | 층 | 대상 | 위치 | 업데이트 |
 |---|---|---|---|
 | 1. 툴이 직접 관리 | claude, herdr, mise, rclone | `~/.local/bin` (실제 파일) | `claude update`, `herdr update`, `mise self-update`, `rclone selfupdate` |
-| 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim, tree-sitter) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
+| 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim, tree-sitter, delta) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
 | 3. stow | 직접 빌드하거나 rpm 을 푼 것, mise 에 없는 단일 바이너리·AppImage (magick, tectonic, wezterm) | `~/.local/stow/<이름-버전>`, 원본은 `~/.local/_tarball` | 새 버전 디렉토리 stow, 이전 버전 `stow -D` |
 
 ### `~/.local` 디렉토리 역할

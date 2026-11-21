@@ -1,0 +1,185 @@
+# herdr configuration — ~/.config/herdr/config.toml
+#
+# 목적: tmux를 대체하는 게 아니라, AI 코딩 에이전트(Claude Code, Codex 등)를
+#       여러 개 돌리는 용도로 herdr를 추가한다. ~/.tmux.conf 는 그대로 둔다.
+#
+# 각 항목의 주석에 대응하는 tmux 설정을 남겨두었다.
+# 변환 불가 항목과 그 이유는 이 파일 맨 아래에 정리해 두었다.
+#
+# 개념 대응: tmux session → herdr workspace / tmux window → herdr tab / pane → pane
+#
+# 주의: [keys] 섹션은 "모르는 필드를 조용히 무시"한다. 액션명에 오타가 나도
+#       에러 없이 그냥 동작하지 않는다. 수정 후에는 반드시 아래를 돌릴 것:
+#           herdr config check
+#       실행 중인 서버에 반영은 prefix+shift+r 또는 `herdr server reload-config`.
+#
+# 기본값 전체를 보려면: herdr --default-config
+
+[terminal]
+# tmux: split-window / new-window 의 -c "#{pane_current_path}"
+new_cwd = "follow"
+
+[keys]
+# tmux 기본 prefix 를 그대로 유지 (herdr 기본값도 ctrl+b 라 동일)
+prefix = "ctrl+b"
+
+# tmux: detach-client 는 prefix+d (herdr 기본값은 prefix+q)
+detach = "prefix+d"
+
+# tmux: bind , rename-window (herdr 기본값은 prefix+shift+t)
+rename_tab = "prefix+comma"
+
+# tmux: bind c new-window -c "#{pane_current_path}"
+new_tab = "prefix+c"
+
+# tmux: bind -r h/j/k/l select-pane -L/-D/-U/-R
+# (herdr 기본값과 동일하지만, 손에 익은 키라 명시적으로 남겨둔다)
+# 차이: herdr 에는 tmux 의 -r (repeat) 개념이 없어 매번 prefix 를 눌러야 한다.
+focus_pane_left  = "prefix+h"
+focus_pane_down  = "prefix+j"
+focus_pane_up    = "prefix+k"
+focus_pane_right = "prefix+l"
+
+# tmux: bind -r C-h/C-j/C-k/C-l resize-pane -L/-D/-U/-R 5
+# 차이 ①: 증감 폭(5칸)을 지정할 수 없다.
+# 차이 ②: -r 반복이 없다. 연속으로 조절하려면 resize_mode 로 들어가는 쪽이
+#         herdr 의 정석이다 — prefix+r 누른 뒤 hjkl 을 연타하면 된다.
+resize_mode       = "prefix+r"
+resize_pane_left  = "prefix+ctrl+h"
+resize_pane_down  = "prefix+ctrl+j"
+resize_pane_up    = "prefix+ctrl+k"
+resize_pane_right = "prefix+ctrl+l"
+
+# tmux: bind % split-window -h   → 좌우 분할
+# tmux: bind " split-window      → 위아래 분할
+#
+# !! 이름에 주의 !! herdr 에서는 split_vertical 이 "좌우" 분할이고
+#    split_horizontal 이 "위아래" 분할이다. tmux 의 -h/-v 와 반대로 느껴진다.
+#
+# !! 터미널 호환성 주의 !! '%' 와 '"' 는 shift 조합 문장부호라 터미널에 따라
+#    prefix 모드로 제대로 전달되지 않을 수 있다(herdr 공식 경고). 동작하지 않으면
+#    herdr 기본값인 "prefix+v"(좌우) / "prefix+minus"(위아래) 로 되돌릴 것.
+split_vertical   = "prefix+%"
+split_horizontal = "prefix+\""
+
+# tmux: bind C-w display-popup ... fzf ... switch-client
+# herdr 에는 workspace 선택기가 내장돼 있어 fzf 스크립트가 필요 없다.
+# (herdr 기본값은 prefix+w 이지만 tmux 쪽 손버릇에 맞춘다)
+workspace_picker = "prefix+ctrl+w"
+
+# tmux: bind / switch-client -l
+# 근사치: tmux 는 "마지막에 쓰던" 세션으로 토글하지만
+#         herdr 의 previous_workspace 는 "순서상 이전" workspace 로 간다.
+previous_workspace = "prefix+slash"
+
+# config 를 고친 뒤 실행 중인 세션에 반영 (herdr 기본값, 명시적으로 남김)
+reload_config = "prefix+shift+r"
+
+# tmux: bind "'" last-window
+# herdr 에는 last_tab(마지막 tab 토글) 액션이 아예 없다.
+# 아래 last_pane 은 tab 이 아니라 pane 단위라 의미가 다르므로 기본 비활성.
+# tab 전환은 prefix+p / prefix+n / prefix+1..9 를 쓸 것.
+# last_pane = "prefix+'"
+
+# tmux: bind C-g display-popup -d "#{pane_current_path}" -w 80% -h 80% -E "lazygit"
+[[keys.command]]
+key = "prefix+ctrl+g"
+type = "popup"
+command = "lazygit"
+description = "lazygit"
+width = "80%"
+height = "80%"
+
+# tmux: bind C-o ... display-popup ... "tmux attach-session -t popup || new-session"
+# 근사치: 팝업 셸은 뜨지만 tmux 쪽의 "popup 세션을 유지하며 토글" 동작은
+#         herdr 로 표현할 수 없다. 팝업을 닫으면 그 셸은 그대로 종료된다.
+[[keys.command]]
+key = "prefix+ctrl+o"
+type = "popup"
+command = "$SHELL"
+description = "scratch shell"
+width = "80%"
+height = "80%"
+
+# tmux: bind C-_ display-popup -w 50% -h 50% -E "printf '...' | less"
+[[keys.command]]
+key = "prefix+ctrl+_"
+type = "popup"
+command = "printf 'C-w: workspace picker\\nC-o: scratch shell popup\\nC-g: lazygit\\nprefix+?: herdr 내장 도움말\\n' | less"
+description = "cheat sheet"
+width = "50%"
+height = "50%"
+
+[ui]
+# tmux: set -g mouse on
+mouse_capture = true
+
+# tmux 는 새 window 를 만들 때 이름을 묻지 않는다. 같은 느낌으로 맞춘다.
+prompt_new_tab_name = false
+
+# tmux 처럼 내부 구분선만 그리고 pane 영역 바깥 프레임은 없앤다.
+pane_outer_borders = false
+
+# tmux: set -g status-left '[#S] '
+# herdr 는 상태바 좌측 대신 사이드바에 workspace 목록을 보여준다.
+# 터미널 창 제목으로 비슷한 정보를 남긴다.
+window_title = "{hostname}: {workspace}"
+
+# tmux: set -g status-right '#H | %Y-%m-%d %H:%M'
+tab_bar_right = [
+  { type = "hostname" },
+  { type = "text", text = " | " },
+  { type = "datetime", format = "%Y-%m-%d %H:%M" },
+]
+
+[session]
+# tmux: set -g @continuum-restore 'on'
+# herdr 는 detach 해도 서버가 살아 있어 프로세스가 죽지 않는다(resurrect 보다 강력).
+# 이 옵션은 "서버 자체가 재시작된" 뒤 에이전트 대화 세션까지 복원하는 설정이다.
+# tmux 의 @continuum-save-interval 에 해당하는 설정은 필요 없다.
+resume_agents_on_restore = true
+
+[advanced]
+# tmux: set-option -g history-limit 50000
+# 주의: 줄 수가 아니라 "바이트" 단위다. 10MB 면 대략 5만 줄 수준이라 기본값을 쓴다.
+scrollback_limit_bytes = 10000000
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# .tmux.conf 에서 "변환 불가"인 항목들 (대응 설정이 herdr 에 없음)
+#
+#   set -sg escape-time 10
+#       대응 없음. 그리고 불필요하다. herdr 는 키 입력과 터미널 색상 질의 응답을
+#       자체 파싱하며, tmux 에서 escape-time 으로 우회하던 "11;rgb:..." 누출은
+#       herdr 0.9.4 에서 수정되었다.
+#
+#   set -g focus-events on
+#       노출된 설정 없음(내부 처리). [ui] redraw_on_focus_gained 는 herdr 자신의
+#       재그리기 옵션이라 의미가 다르다.
+#
+#   set -g renumber-windows on
+#       tab 번호 재정렬 설정이 없다.
+#
+#   set-window-option -g mode-keys vi
+#       tmux 식 복사모드가 없다. 대신 prefix+e (edit_scrollback) 가 스크롤백을
+#       $EDITOR(nvim) 로 열어주므로 거기서 vi 키를 온전히 쓸 수 있다.
+#
+#   set -g status-interval 15
+#       tab_bar_right 의 { type = "command" } 항목에만 interval_seconds 로 적용된다.
+#       현재 설정에는 command 항목이 없어 해당 없음.
+#
+#   set -g status-left-length / status-right-length
+#       길이 제한 개념이 없다.
+#
+#   set -g window-status-current-format (powerline 반원  )
+#       상태바 포맷 문자열을 지정할 수 없다. [theme] 와 [ui] accent 로 대체한다.
+#
+#   set -as terminal-features ",*:RGB" / set -ga terminal-overrides ",*256col*:Tc"
+#       불필요. truecolor 를 네이티브로 처리한다.
+#
+#   TPM(tmux-plugins/tpm) 자동 설치 및 run '~/.tmux/plugins/tpm/tpm'
+#       herdr 는 자체 플러그인 시스템과 마켓플레이스를 쓴다. `herdr plugin --help`.
+#
+#   tmux-resurrect / tmux-continuum 수동 저장·복원 키 (C-b C-s / C-b C-r)
+#       불필요. 서버가 상주하므로 detach 후에도 pane 과 에이전트가 계속 돈다.
+# ─────────────────────────────────────────────────────────────────────────────

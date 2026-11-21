@@ -2,6 +2,22 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 비대화형 SSH 셸용 최소 PATH (반드시 아래 '비대화형이면 return' 가드보다 위)
+#
+# `ssh <host> <command>` 나 `herdr --remote <host>` 가 띄우는 원격 서버는
+# 비대화형 셸이라 아래 case 문에서 즉시 return 되고, 그 결과 ~/.bashrc.d/ 가
+# source 되지 않아 ~/.local/bin 이 PATH에 없다. 그러면 원격 herdr 바이너리도,
+# ~/.local 아래 stow로 깐 툴체인도 못 찾는다.
+#
+# 여기에는 PATH 한 줄만 둔다. zoxide eval 같은 무거운 초기화는 절대 올리지 말 것
+# (비대화형 셸마다 실행되어 scp/rsync/git 원격 호출까지 느려지거나 깨진다).
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+# ─────────────────────────────────────────────────────────────────────────────
+
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;

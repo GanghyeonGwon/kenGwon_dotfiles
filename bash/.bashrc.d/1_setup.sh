@@ -1,5 +1,9 @@
 # 사용자용 실행파일 PATH 추가
-export PATH="$PATH:$HOME/.local/bin"
+# (.bashrc 상단에서 비대화형 셸용으로 이미 추가하므로 여기선 중복만 방지)
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$PATH:$HOME/.local/bin" ;;
+esac
 
 # npm 패키지 매니저로 깐 모듈들 PATH 잡기
 export PATH="$PATH:$HOME/.nvm/versions/node/v22.20.0/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/.bin"

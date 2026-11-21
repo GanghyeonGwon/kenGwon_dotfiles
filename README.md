@@ -17,7 +17,7 @@ bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서�
 | 층 | 대상 | 위치 | 업데이트 |
 |---|---|---|---|
 | 1. 툴이 직접 관리 | claude, herdr, mise, rclone | `~/.local/bin` (실제 파일) | `claude update`, `herdr update`, `mise self-update`, `rclone selfupdate` |
-| 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
+| 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim, tree-sitter) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
 | 3. stow | 직접 빌드하거나 rpm 을 푼 것, mise 에 없는 단일 바이너리·AppImage (magick, tectonic, wezterm) | `~/.local/stow/<이름-버전>`, 원본은 `~/.local/_tarball` | 새 버전 디렉토리 stow, 이전 버전 `stow -D` |
 
 ### `~/.local` 디렉토리 역할

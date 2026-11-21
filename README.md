@@ -17,6 +17,11 @@ bash / tmux / nvim / herdr / mise / git / lazygit 설정. root 권한 없이 `$H
   git 은 이 파일과 `~/.gitconfig` 를 둘 다 읽고 같은 키는 `~/.gitconfig` 가 이긴다.
   user.name/email, 인증, url 재작성처럼 머신마다 다른 것은 `~/.gitconfig` 에 두고 저장소에 넣지 않는다.
 - delta 가 PATH 에 없으면(오래된 프로세스, mise 미설치) git 은 예전처럼 `less` 로 보여 준다.
+  lazygit 도 같은 방식의 폴백이 있다(1132305). git 이 색을 입힌 일반 diff 를 그대로 보여 준다
+  (lazygit 이 git 에 `--color=always` 를 붙여 넘기므로 `cat` 폴백도 색이 있다). c7027c1 에는 lazygit 폴백이 빠져 있었다.
+  lazygit 0.66 에는 "렌더러가 실패하면 다음 것으로" 같은 기능이 없어 이 방식이 최선이다.
+- delta 색은 **어두운 터미널 전용**으로 고정했다(`dark = true`, `syntax-theme = Visual Studio Dark+`).
+  두 머신 모두 어두운 터미널을 쓰고 nvim 도 vscode(dark) 테마다. 밝은 터미널을 쓰게 되면 다시 정한다.
 
 ## `$HOME` 툴 배치 원칙: "업데이트를 누가 하나"
 
@@ -47,6 +52,9 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
 - 스스로 업데이트하는 툴을 stow/mise 에 넣지 않는다. 버전 디렉토리 안의 파일이 제자리에서 새 버전으로
   덮여 버전 표기와 롤백이 깨진다. herdr 0.9.5 로 실측했다(`scripts/install-herdr.sh` 주석 참고).
 - mise 버전은 `config.toml` 에, 체크섬은 `mise.lock` 에 고정된다. 노트북과 빌드서버가 같은 선언을 쓴다.
+  - `mise.lock` 의 delta `linux-arm64-musl` 항목이 glibc 용 aarch64 tarball 을 가리킨다(arm64 항목과 URL·체크섬 동일).
+    delta 가 aarch64 musl 빌드를 내지 않아 mise 가 그렇게 기록한 것이다. 두 머신 모두 x86_64 라 영향 없고,
+    `mise lock` 이 생성하는 파일이라 손으로 고치지 않는다.
 
 ## 동기화 원칙: 빌드서버가 기준
 

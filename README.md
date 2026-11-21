@@ -160,9 +160,11 @@ nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 
     - tmux: 설정, 플러그인, popup 환경, pane 셸, pane 안의 nvim TUI
     - herdr: 서버를 재시작하자 claude 2개가 `--resume <세션ID>` 로 자동 복구됐다. pane 셸과 nvim 도 정상
     - nvim: checkhealth 오류·경고가 옛 판과 동일
-- mise shim 호환 링크(`~/.local/bin/<툴>` → shims)는 PATH 에 shims 가 없는 오래된 프로세스(VS Code server,
-  Claude 원격 세션)가 남아 있어 아직 두었다. 그 프로세스들이 사라진 뒤(재부팅 등)
-  `~/.local/_retired/20261121/RETIRE_COMPAT_LINKS.sh` 로 지운다(남아 있으면 스스로 거부한다).
+- 2026-11-21: mise shim 호환 링크(`~/.local/bin/<툴>` → shims) 7개를 `RETIRE_COMPAT_LINKS.sh` 로 지웠다.
+  재부팅은 필요 없었다. PATH 에 shims 가 없던 11/19~20 시작 프로세스(VS Code server, Claude 원격 세션 2개)를
+  정리한 뒤 실행했다. 대화형·로그인·비대화형 SSH 셸 모두 shims 로 툴을 찾는다.
+  되돌리기: `ln -s ../share/mise/shims/<툴> ~/.local/bin/<툴>`
+- 2026-11-21: `mise prune` 으로 옛 버전 7개(neovim 0.11.4, rg 14.1.1 등)를 지웠다. 되돌리려면 버전을 되돌리고 `mise install`.
 - herdr 롤백: `scripts/install-herdr.sh --offline ~/.local/_tarball/herdr-<이전버전>-linux-x86_64`
 - 2026-11-21: nvim 을 0.11.4 에서 0.12.6 으로 올리고 `:Lazy update` 로 플러그인 23개를 갱신했다(LazyVim 16.0.2).
   - LazyVim 은 nvim < 0.12 일 때만 nvim-treesitter 를 `7caec274` 로 고정한다. 0.12 에서는 고정이 풀려 최신 main 을 따른다.

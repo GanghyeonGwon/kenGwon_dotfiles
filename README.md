@@ -113,6 +113,19 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
     0.11.4 와 같다. 롤백: 이 커밋을 되돌리고 `mise install` → `:Lazy restore` → `:TSUpdate`.
   - 노트북 따라가기: pull → `mise install` → `:Lazy restore` → `:TSUpdate` → `:TSUninstall jsonc`
     → `:MasonUninstall tree-sitter-cli`(있으면) → `:checkhealth nvim-treesitter`.
+- 2026-11-21: mise 툴을 올렸다. rg 14.1.1→15.2.0, fd 10.3.0→10.5.2, bat 0.26.0→0.26.1, eza 0.23.4→0.23.5,
+  lazygit 0.55.1→0.66.3, zoxide 0.9.8→0.10.0. tree-sitter(0.27)는 nvim-treesitter 지원을 확인하기 전까지 보류한다.
+  - 검증: rg/fd/bat/eza 출력(검색 결과, 파일 목록, 하이라이트 해시, ls 결과)이 전후 바이트 단위로 같다.
+    대화형 bash 기동 오류 없음. zoxide 는 DB 599개 그대로이고, 새 셸과 이미 떠 있던 셸(0.9.8 init 함수) 모두 `z` 정상.
+    lazygit 은 pty 에서 패널이 정상으로 그려지고 `state.yml` 이 바뀌지 않았다.
+  - 롤백: `config.toml`, `mise.lock` 을 되돌리고 `mise install`. 옛 버전은 `mise prune` 전까지 남아 있다.
+- 2026-11-21: mason 패키지를 올렸다(저장소 밖이라 머신마다 따로 한다. `:Mason` → `U`).
+  clangd 21.1.0→23.1.0, lua-language-server 3.15.0→3.19.2, bash-language-server 5.6.0→5.8.1, pyright 1.1.406→1.1.414,
+  marksman, markdownlint(-cli2), stylua 2.3.0→2.6.0, shfmt 3.12.0→3.14.1.
+  - 검증: c/lua/sh/py/json 버퍼에 LSP 가 전후 똑같이 붙는다. 실제 BSP 파일(`eyeTune`)에 `clangd --check` 를 돌리면
+    21 은 `-mno-riscv-attribute` 등 커널 플래그 3개를 몰라서 오류 3개를 냈고, 23 은 0개다.
+  - 롤백: `:MasonInstall clangd@21.1.0` 처럼 버전을 지정해 다시 설치한다.
+  - 같이 정리: `~/.local/state/nvim/lsp.log`(268MB)를 비우고, clone 실패로 남은 `lazy/vim-osc52.cloning` 을 지웠다.
 
 ## 노트북 이력 메모
 

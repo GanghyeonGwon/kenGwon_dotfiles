@@ -6,16 +6,17 @@
 #   - 직접 빌드하거나 rpm 을 푼 것 → ~/.local/stow (원본은 ~/.local/_tarball)
 #
 # 버전은 2026-11-21 빌드서버에 깔려 있던 것과 동일하게 고정했다(바이너리 sha256 일치 확인).
-# 이후 변경: neovim 0.11.4 → 0.12.6 (2026-11-21)
+# 이후 변경(2026-11-21): neovim 0.11.4→0.12.6, rg 14.1.1→15.2.0, fd 10.3.0→10.5.2, bat 0.26.0→0.26.1,
+#   eza 0.23.4→0.23.5, lazygit 0.55.1→0.66.3, zoxide 0.9.8→0.10.0
 # 올릴 때: 버전 수정 → mise install → mise lock --global → 커밋
 
 [tools]
-ripgrep = "14.1.1"
-fd      = "10.3.0"
-bat     = "0.26.0"
-eza     = "0.23.4"
-lazygit = "0.55.1"
-zoxide  = "0.9.8"
+ripgrep = "15.2.0"
+fd      = "10.5.2"
+bat     = "0.26.1"
+eza     = "0.23.5"
+lazygit = "0.66.3"
+zoxide  = "0.10.0"
 neovim  = "0.12.6"
 tree-sitter = "0.26.13"   # nvim-treesitter(main) 요구: tree-sitter-cli >= 0.26.1
 

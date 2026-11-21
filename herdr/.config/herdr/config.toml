@@ -68,6 +68,11 @@ split_horizontal = "prefix+\""
 # (herdr 기본값은 prefix+w 이지만 tmux 쪽 손버릇에 맞춘다)
 workspace_picker = "prefix+ctrl+w"
 
+# workspace 선택기(navigate 모드) 안에서 위/아래 이동: 방향키(기본값)에 ctrl+p / ctrl+n 추가
+# fzf·쉘 히스토리처럼 손을 홈 포지션에 둔 채 이동하기 위함. 배열이면 여러 키를 함께 쓸 수 있다.
+navigate_workspace_up   = ["up", "ctrl+p"]
+navigate_workspace_down = ["down", "ctrl+n"]
+
 # workspace 순회 (herdr 기본값은 둘 다 unset)
 # tmux 의 switch-client -l(마지막 세션 토글) 같은 MRU 토글은 herdr 에 없다.
 # 대신 "순서상" 이전/다음 workspace 로 이동한다. 사이드바 목록 순서 기준이다.

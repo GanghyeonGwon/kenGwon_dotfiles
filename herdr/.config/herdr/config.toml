@@ -139,6 +139,18 @@ tab_bar_right = [
   { type = "datetime", format = "%Y-%m-%d %H:%M" },
 ]
 
+# 에이전트가 끝나거나(done) 입력을 기다리면(needs input) herdr 화면 안에 팝업을 띄운다(기본값 off).
+# 지금 보고 있는 tab 의 에이전트는 팝업하지 않는다. prefix+o 로 알림이 온 pane 으로 바로 간다.
+# 원격 서버에서 `ssh → herdr` 로 쓰면 소리는 서버에서 나서 들리지 않으므로 화면 팝업으로 대신한다.
+#   다른 선택지: "terminal"(바깥 터미널에 OSC 99 데스크톱 알림 요청, kitty 등 지원 터미널만),
+#               "system"(클라이언트가 도는 OS 알림. 노트북에서 `herdr --remote` 로 붙을 때 유효)
+[ui.toast]
+delivery = "herdr"
+delay_seconds = 1     # 1초 뒤에도 같은 상태일 때만 알린다(잠깐 멈췄다 도는 경우 무시)
+
+[ui.toast.herdr]
+position = "bottom-right"
+
 [session]
 # tmux: set -g @continuum-restore 'on'
 # herdr 는 detach 해도 서버가 살아 있어 프로세스가 죽지 않는다(resurrect 보다 강력).

@@ -105,13 +105,15 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
   - LazyVim 은 nvim < 0.12 일 때만 nvim-treesitter 를 `7caec274` 로 고정한다. 0.12 에서는 고정이 풀려 최신 main 을 따른다.
     그래서 lock 의 treesitter 커밋이 nvim 버전에 따라 달라진다. **노트북과 빌드서버의 nvim 버전을 같이 맞춘다.**
   - treesitter 를 올린 뒤 `:TSUpdate` 를 해야 한다. 하지 않으면 `diff` 쿼리 오류가 난다.
-  - 최신 nvim-treesitter 는 `jsonc` 파서를 뺐다(`json` 이 jsonc 파일도 처리한다). 남아 있던 `jsonc.so` 를 지웠다.
+  - 최신 nvim-treesitter 는 `jsonc` 파서를 뺐다(`json` 이 jsonc 파일도 처리한다).
+    지원 목록에서 빠졌기 때문에 `uninstall('jsonc')` 는 "unsupported language" 경고만 내고 아무것도 지우지 않는다.
+    `~/.local/share/nvim/site/parser/jsonc.so` 와 `site/parser-info/jsonc.revision` 을 직접 지웠다.
   - mason 이 예전에 깔아 둔 tree-sitter-cli 0.25.10 이 nvim 안의 PATH 에서 mise 0.26.13 을 가리고 있었다
     (checkhealth: "tree-sitter-cli v0.26.1 is required"). mason 패키지를 지웠다. LazyVim 은 PATH 에
     tree-sitter 가 없을 때만 mason 으로 설치하므로 다시 깔리지 않는다.
   - 검증(headless): C, jsonc 하이라이트, t32 파서 정상. checkhealth 에 남은 오류는 headless 에서만 나는 snacks 5개로,
     0.11.4 와 같다. 롤백: 이 커밋을 되돌리고 `mise install` → `:Lazy restore` → `:TSUpdate`.
-  - 노트북 따라가기: pull → `mise install` → `:Lazy restore` → `:TSUpdate` → `:TSUninstall jsonc`
+  - 노트북 따라가기: pull → `mise install` → `:Lazy restore` → `:TSUpdate` → jsonc 파서 파일 직접 삭제(위 참고)
     → `:MasonUninstall tree-sitter-cli`(있으면) → `:checkhealth nvim-treesitter`.
 - 2026-11-21: mise 툴을 올렸다. rg 14.1.1→15.2.0, fd 10.3.0→10.5.2, bat 0.26.0→0.26.1, eza 0.23.4→0.23.5,
   lazygit 0.55.1→0.66.3, zoxide 0.9.8→0.10.0. tree-sitter(0.27)는 nvim-treesitter 지원을 확인하기 전까지 보류한다.

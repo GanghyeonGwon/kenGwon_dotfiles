@@ -17,7 +17,7 @@ bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서�
 | 층 | 대상 | 위치 | 업데이트 |
 |---|---|---|---|
 | 1. 툴이 직접 관리 | claude, herdr, mise | `~/.local/bin` (실제 파일) | `claude update`, `herdr update`, `mise self-update` |
-| 2. mise | GitHub 릴리즈 단일 바이너리 (rg, fd, bat, eza, lazygit, zoxide) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
+| 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
 | 3. stow | 직접 빌드하거나 rpm 을 푼 것 | `~/.local/stow/<이름-버전>`, 원본은 `~/.local/_tarball` | 새 버전 디렉토리 stow, 이전 버전 `stow -D` |
 
 - 스스로 업데이트하는 툴을 stow/mise 에 넣지 않는다. 버전 디렉토리 안의 파일이 제자리에서 새 버전으로
@@ -36,3 +36,7 @@ bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서�
 - 2026-11-21: rg/fd/bat/eza/lazygit/zoxide 를 mise 로 이전했다(바이너리 sha256 동일).
   `~/.local/bin/<툴>` 은 mise shim 으로 가는 호환 링크로 남겨 두었다. 이전부터 떠 있던 tmux/herdr 셸의
   PATH 에는 shims 가 없기 때문이다. 옛 파일은 `~/.local/_retired/20261121/` 에 있고, `ROLLBACK.sh` 로 되돌린다.
+- 2026-11-21: nvim 도 mise(neovim 0.11.4)로 이전했다. `--version` 과 런타임 트리가 옛 AppImage 판과 동일하다.
+  옛 `~/.local/bin/squashfs-root` 는 실행 중인 nvim 이 런타임 파일을 계속 읽기 때문에 그 자리에 두었다.
+  옛 nvim 이 모두 종료된 뒤 `~/.local/_retired/20261121/RETIRE_NVIM_APPIMAGE.sh` 로 치운다
+  (사용 중인 프로세스가 있으면 스스로 거부한다).

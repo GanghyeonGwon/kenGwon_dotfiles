@@ -61,6 +61,43 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
 - 빌드서버는 GitHub 에 push 하지 못한다(SSH 키 없음). 노트북에서 빌드서버 저장소를 pull 해서 GitHub 로 push 한다.
   `git pull ssh://ghgwon@192.168.0.99/disk/vol3/ghgwon/dotfiles main && git push`
 
+## tree-sitter (구문 하이라이트)
+
+nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 이동이 tree-sitter 로 동작한다. 세 부분으로 나뉜다.
+
+| 구성 | 역할 | 버전을 정하는 곳 |
+|---|---|---|
+| ① 엔진 | 파서를 실행한다 | nvim 에 내장 → mise `neovim` |
+| ② nvim-treesitter 플러그인 | 언어별 파서 버전과 하이라이트 규칙(쿼리)을 정한다 | `lazy-lock.json` |
+| ③ tree-sitter CLI | 파서를 `.so` 로 컴파일한다 | mise `tree-sitter` |
+
+- 파서 버전은 ② 의 커밋이 정한다. 그래서 `lazy-lock.json` 만 같으면 두 머신의 하이라이트가 같다.
+  파서는 `~/.local/share/nvim/site/parser/*.so` 에 있다(저장소 밖).
+- ② 를 올리면 파서(.so)도 같이 맞춰야 한다. 어긋나면 "query error" 가 나거나 하이라이트가 빠진다.
+  LazyVim 은 ② 가 바뀔 때 build 훅으로 `:TSUpdate` 를 **자동으로** 돌린다. 단 nvim 을 화면으로 열었을 때 얘기다.
+  headless 로 `+Lazy! update +qa` 를 돌리면 훅이 끝나기 전에 종료되므로 `:TSUpdate` 를 따로 해야 한다.
+- 언어 목록은 `nvim/.config/nvim/lua/plugins/treesitter.lua` 의 `ensure_installed` 다(LazyVim 기본 목록에 더해짐).
+  목록에 없는 언어는 vim 의 옛 정규식 syntax 로 떨어진다. 목록에 추가하면 nvim 을 열 때 자동으로 설치된다.
+- `.h` 는 내용으로 C/C++ 를 판정한다(같은 파일 주석 참고). nvim 기본값은 무조건 C++ 라서 커널 헤더가 깨졌다.
+- 언어별 하이라이트 규칙 보강은 `nvim/.config/nvim/queries/<언어>/highlights.scm`(`; extends`), 색은 `colorscheme.lua` 의
+  `@그룹.<언어>` 항목에 둔다. 지금은 devicetree 만 있다(매크로 purple, `&참조` 를 라벨 색으로, `#if`/`#define` 등 전처리문을 .h 와 같은 회색으로,
+  `#define` 값은 `injections.scm` 으로 C 처럼 칠함).
+
+업데이트 절차(빌드서버):
+1. nvim 을 화면으로 열고 `:Lazy update` → 아래쪽에 "Installed/Updated N languages" 요약이 뜰 때까지 기다린다.
+2. nvim 을 닫고 `scripts/check-treesitter.sh <자주 여는 파일들>` → 마지막 줄이 `TREESITTER OK` 인지 본다.
+   설치된 모든 파서의 쿼리를 실제로 파싱하고, 빠진 파서와 파일별 하이라이트 켜짐 여부를 확인한다.
+3. 평소 보는 파일 몇 개를 열어 색을 눈으로 본다(아래 "눈으로 볼 것").
+4. 이상하면 `:TSUpdate` → 그래도 이상하면 lock 을 되돌리고 `:Lazy restore` → `:TSUpdate`.
+
+노트북: pull → nvim 을 열면 새 언어가 자동 설치된다 → `:Lazy restore` → `:TSUpdate` → `scripts/check-treesitter.sh`.
+
+눈으로 볼 것(스크립트가 못 잡는 것: "켜졌는데 색이 틀린" 경우):
+- C: 매크로(`#define`), 함수 이름, 타입, 문자열 안 `%d` 같은 포맷, 주석 안 `TODO`
+- 커널 헤더: `new`, `class` 같은 변수명이 키워드 색이 아닌지
+- `.dts`, Makefile, Kconfig, `.S`, `.cmm`: 대충이라도 구분돼서 칠해지는지
+- `:Inspect` 를 커서 위에서 실행하면 그 글자에 붙은 하이라이트 그룹을 볼 수 있다.
+
 ## 알려진 문제
 
 - 빌드서버의 시스템 tmux(`tmux-3.3a-13.20230918git…el10`, `tmux -V` = next-3.4)는 `tmux capture-pane` 을

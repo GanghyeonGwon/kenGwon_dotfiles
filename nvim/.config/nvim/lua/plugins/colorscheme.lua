@@ -36,6 +36,10 @@ return {
         -- 매크로 이름 (정의 및 사용 시): purple
         ["@lsp.type.macro.c"]         = { fg = "#c1b0d8" },
         ["@lsp.type.macro.cpp"]       = { fg = "#c1b0d8" },
+        -- devicetree(.dts/.dtsi): 규칙 보강은 queries/devicetree/highlights.scm
+        --   매크로(GPIO_ACTIVE_HIGH 등): C 매크로와 같은 purple
+        ["@constant.macro.devicetree"] = { fg = "#c1b0d8" },
+        ["@function.macro.devicetree"] = { fg = "#c1b0d8" },
       },
     },
   },

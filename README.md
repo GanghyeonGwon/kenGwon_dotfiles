@@ -101,6 +101,18 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
   Claude 원격 세션)가 남아 있어 아직 두었다. 그 프로세스들이 사라진 뒤(재부팅 등)
   `~/.local/_retired/20261121/RETIRE_COMPAT_LINKS.sh` 로 지운다(남아 있으면 스스로 거부한다).
 - herdr 롤백: `scripts/install-herdr.sh --offline ~/.local/_tarball/herdr-<이전버전>-linux-x86_64`
+- 2026-11-21: nvim 을 0.11.4 에서 0.12.6 으로 올리고 `:Lazy update` 로 플러그인 23개를 갱신했다(LazyVim 16.0.2).
+  - LazyVim 은 nvim < 0.12 일 때만 nvim-treesitter 를 `7caec274` 로 고정한다. 0.12 에서는 고정이 풀려 최신 main 을 따른다.
+    그래서 lock 의 treesitter 커밋이 nvim 버전에 따라 달라진다. **노트북과 빌드서버의 nvim 버전을 같이 맞춘다.**
+  - treesitter 를 올린 뒤 `:TSUpdate` 를 해야 한다. 하지 않으면 `diff` 쿼리 오류가 난다.
+  - 최신 nvim-treesitter 는 `jsonc` 파서를 뺐다(`json` 이 jsonc 파일도 처리한다). 남아 있던 `jsonc.so` 를 지웠다.
+  - mason 이 예전에 깔아 둔 tree-sitter-cli 0.25.10 이 nvim 안의 PATH 에서 mise 0.26.13 을 가리고 있었다
+    (checkhealth: "tree-sitter-cli v0.26.1 is required"). mason 패키지를 지웠다. LazyVim 은 PATH 에
+    tree-sitter 가 없을 때만 mason 으로 설치하므로 다시 깔리지 않는다.
+  - 검증(headless): C, jsonc 하이라이트, t32 파서 정상. checkhealth 에 남은 오류는 headless 에서만 나는 snacks 5개로,
+    0.11.4 와 같다. 롤백: 이 커밋을 되돌리고 `mise install` → `:Lazy restore` → `:TSUpdate`.
+  - 노트북 따라가기: pull → `mise install` → `:Lazy restore` → `:TSUpdate` → `:TSUninstall jsonc`
+    → `:MasonUninstall tree-sitter-cli`(있으면) → `:checkhealth nvim-treesitter`.
 
 ## 노트북 이력 메모
 

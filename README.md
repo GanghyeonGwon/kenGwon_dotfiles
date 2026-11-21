@@ -280,3 +280,20 @@ Claude Code 내부 서브에이전트와 달리 helper 가 pane 으로 보이고
     회귀(LSP 5종, clangd `--log=error`, `vim.lsp.log.get_level()` = 5/OFF), herdr `config check` ok.
   - 이 과정에서 `~/dotfiles` 세션을 덮어썼다(위 "알려진 문제" 참고). 잘못된 세션이 복원되느니
     없는 편이 나아서 지웠다. 이후 검증은 전부 cwd 를 /tmp 로 두고 돌렸다.
+- 2026-11-21: 노트북을 빌드서버 746fc23 에 맞췄다. 저장소는 이미 같은 커밋이라 pull 도 push 도 필요 없었다.
+  - delta 0.20.1(mise) 설치, `~/.config/git/config` 와 `~/.config/lazygit/config.yml` 링크 생성.
+    노트북에는 `~/.config/git/config` 가 원래 없어서 백업이 안 생겼고, user.name/email 은
+    저장소 로컬 `.git/config` 에 있어 옮길 것이 없었다. lazygit 쪽 백업은 0 바이트 빈 파일이었다.
+  - 검증: `git diff` 가 delta 로 그려지고(Δ, │, ⋮), delta 없는 PATH 에서는 일반 diff 로 떨어진다
+    ("not found" 안 남). `git add -p` 프롬프트 정상, lazygit diff 패널에 delta 줄 번호.
+  - herdr 에이전트 skill 설치: `herdr --skill > ~/.claude/skills/herdr/SKILL.md` (214줄).
+    공식 저장소 v0.9.5 태그의 `skills/herdr/SKILL.md` 와 sha256 까지 일치한다.
+  - `mise prune` 으로 옛 버전 7개 제거(bat 0.26.0, eza 0.23.4, fd 10.3.0, lazygit 0.55.1,
+    neovim 0.11.4, ripgrep 14.1.1, zoxide 0.9.8). 지우기 전에 /proc 의 exe·maps·fd 로
+    쓰는 프로세스가 없음을 확인했다.
+  - mise shim 호환 링크 5개(eza, fd, lazygit, nvim, zoxide)를 지웠다. 걸려 있던 프로세스는
+    전부 당시 herdr 세션의 pane 셸이라 herdr 를 재시작해 정리했다.
+    지운 링크는 `~/.local/_retired/20261121/compat-links/` 에 보존했다.
+    이제 `~/.local/bin` 에는 1층(herdr, mise)과 3층 stow 링크만 남는다.
+  - 프로세스 조사 주의: `/proc/<pid>/comm` 은 15자에서 잘린다. gitstatusd 는 `gitstatusd-linu`
+    로 보이므로 제외 패턴을 `gitstatusd*` 처럼 접두사로 써야 한다.

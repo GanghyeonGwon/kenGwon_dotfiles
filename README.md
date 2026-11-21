@@ -131,6 +131,12 @@ nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 
   평소 사용(attach, 분할, popup, resurrect 저장)에서는 이 명령을 쓰지 않는다.
   `@resurrect-capture-pane-contents` 는 켜지 않는다.
 
+- `scripts/check-treesitter.sh` 는 **실행한 디렉토리의 persistence 세션을 덮어쓴다.**
+  nvim 을 cwd 그대로 띄우기 때문에, 저장소 루트에서 돌리면 `~/dotfiles` 세션이
+  그때 열린 샘플 파일 목록으로 바뀐다(2026-11-21 노트북에서 실제로 날렸다).
+  당분간은 `cd /tmp` 하고 절대경로로 부르거나, 날아가도 되는 디렉토리에서 돌린다.
+  근본 수정은 스크립트 맨 위에 `pcall(function() require('persistence').stop() end)` 를 넣는 것이다.
+
 ## PATH
 
 `bash/.bashrc` 맨 위(비대화형 가드보다 위)에서 `~/.local/bin` 과 그 바로 뒤에 mise shims 를 넣는다.
@@ -232,3 +238,19 @@ nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 
     mason 에는 `check_new_version` API 가 없다. `install()` 이 최신으로 재설치하는 방식이다.
   - 검증: LSP 5종 연결, jsonc→json 파서 하이라이트, t32 로드, zoxide DB 383 유지,
     lazygit TUI, WSL 클립보드(nvim → win32yank → Windows) 모두 정상.
+- 2026-11-21: 노트북을 빌드서버 50ee9e9 에 맞췄다. 저장소는 이미 같은 커밋이라 pull 도 push 도 필요 없었다.
+  - tree-sitter 파서 14개는 앞 항목에서 이미 깔려 있었다. mason 은 language-server-bitbake 와
+    oelint-adv 9.14.0 을 새로 깔았다. lazy-lock.json 과 mise 파일은 바뀌지 않았다.
+  - **oelint-adv 는 `python3-venv` 가 없으면 설치에 실패한다.** mason 이 Python 패키지를 venv 로 깔기
+    때문이다. Ubuntu 24.04 기본 설치에는 없어서 `sudo apt install -y python3.12-venv` 가 필요했다.
+    실패 로그는 `spawn: python3 failed with exit code 1` 로만 나와 원인이 바로 보이지 않는다.
+  - `yocto.lua` 의 `ensure_installed` 때문에 mason 을 로드하는 순간 자동 설치가 시작된다.
+    여기에 `:MasonInstall` 을 겹쳐 부르면 `Package is already installing` 으로 깨진다.
+    headless 에서는 자동 설치가 끝나기를 기다리는 쪽이 맞다.
+  - 검증: check-treesitter.sh 9개 샘플 `TREESITTER OK`(.h 는 C/C++ 판정, .lds→ft=ld, .bb→bitbake),
+    dts 색(`#define`→@keyword.directive.define, 매크로→@constant.macro, `&참조`→@label),
+    세션 복원(neo-tree 폭 40, 커서는 파일 창, 폴더 버퍼 0, 세션에 `$argadd` 없음),
+    Yocto(bitbake_ls 연결, SRC_URI hover, DEPE→DEPENDS 자동완성, oelint 진단 4건에 INFO 0건),
+    회귀(LSP 5종, clangd `--log=error`, `vim.lsp.log.get_level()` = 5/OFF), herdr `config check` ok.
+  - 이 과정에서 `~/dotfiles` 세션을 덮어썼다(위 "알려진 문제" 참고). 잘못된 세션이 복원되느니
+    없는 편이 나아서 지웠다. 이후 검증은 전부 cwd 를 /tmp 로 두고 돌렸다.

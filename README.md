@@ -38,16 +38,35 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
 긴 원본 이름은 `.stow-local-ignore` 에 `.*\.AppImage` 를 적어 `~/.local/bin` 에 노출하지 않는다
 (stow 의 무시 패턴은 이름 전체와 비교하므로 `.*` 가 필요하다).
 
+- 스스로 업데이트하는 툴을 stow/mise 에 넣지 않는다. 버전 디렉토리 안의 파일이 제자리에서 새 버전으로
+  덮여 버전 표기와 롤백이 깨진다. herdr 0.9.5 로 실측했다(`scripts/install-herdr.sh` 주석 참고).
+- mise 버전은 `config.toml` 에, 체크섬은 `mise.lock` 에 고정된다. 노트북과 빌드서버가 같은 선언을 쓴다.
+
+## 동기화 원칙: 빌드서버가 기준
+
+주 작업 환경은 빌드서버다. 버전을 올리는 일은 빌드서버에서 하고, 노트북은 따라간다.
+
+| 대상 | 빌드서버 (기준) | 노트북 (따라감) |
+|---|---|---|
+| nvim 플러그인 `nvim/.config/nvim/lazy-lock.json` | `:Lazy update` → 동작 확인 → lock 커밋 | pull → `:Lazy restore` |
+| mise 툴 `mise/.config/mise/{config.toml,mise.lock}` | 버전 수정 → `mise install` → `mise lock --global` → 커밋 | pull → `mise install` |
+
+- lazy-lock.json 은 "이 머신에 설치된 플러그인 커밋"을 lazy 가 자동으로 기록하는 파일이다.
+  `~/.config/nvim` 이 저장소로 링크돼 있어서 lazy 가 쓰는 즉시 저장소 파일이 바뀐다.
+  - 노트북에서는 `:Lazy update` / `:Lazy sync` 를 하지 않는다. 노트북 lock 이 modified 가 되면
+    업데이트를 했거나 lock 에 없는 플러그인을 설치한 것이다. `git restore` 로 버리고 `:Lazy restore` 를 실행한다.
+  - 플러그인을 추가하거나 제거할 때는 설정 파일과 lock 변경을 같은 커밋에 넣는다.
+    lock 을 빼고 커밋하면 다른 머신이 그 플러그인을 설치하면서 lock 을 다시 쓴다(2026-08 smear-cursor 사례).
+  - 수정된 lock 을 `git stash` 로 치우지 않는다. 저장소 lock 과 실제 설치 상태가 어긋난 채로 남는다(2026-09 사례).
+- 빌드서버는 GitHub 에 push 하지 못한다(SSH 키 없음). 노트북에서 빌드서버 저장소를 pull 해서 GitHub 로 push 한다.
+  `git pull ssh://ghgwon@192.168.0.99/disk/vol3/ghgwon/dotfiles main && git push`
+
 ## 알려진 문제
 
 - 빌드서버의 시스템 tmux(`tmux-3.3a-13.20230918git…el10`, `tmux -V` = next-3.4)는 `tmux capture-pane` 을
   실행하면 서버가 core dump 로 죽는다. 빈 설정(`-f /dev/null`)에서도, pane 내용과 상관없이 재현된다.
   평소 사용(attach, 분할, popup, resurrect 저장)에서는 이 명령을 쓰지 않는다.
   `@resurrect-capture-pane-contents` 는 켜지 않는다.
-
-- 스스로 업데이트하는 툴을 stow/mise 에 넣지 않는다. 버전 디렉토리 안의 파일이 제자리에서 새 버전으로
-  덮여 버전 표기와 롤백이 깨진다. herdr 0.9.5 로 실측했다(`scripts/install-herdr.sh` 주석 참고).
-- mise 버전은 `config.toml` 에, 체크섬은 `mise.lock` 에 고정된다. 노트북과 빌드서버가 같은 선언을 쓴다.
 
 ## PATH
 

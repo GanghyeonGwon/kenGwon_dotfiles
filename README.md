@@ -151,3 +151,17 @@ AppImage 처럼 파일 이름이 긴 경우에는 패키지 `bin/` 에 짧은 �
 - stow 주의: `~/.config/herdr` 나 `~/.local/bin` 처럼 **없는 디렉토리를 대상으로 stow 하면 tree folding 이
   일어나 디렉토리 자체가 패키지로 가는 링크가 된다.** herdr 는 그 밑에 로그·소켓을 쓰므로 치명적이다.
   `--no-folding` 을 쓰거나 대상 디렉토리를 미리 만들 것. 노트북에서 실측으로 재현했다.
+- 2026-11-21: 노트북을 빌드서버 f9b736f 에 맞췄다. 저장소는 이미 같은 커밋이라 pull 이 필요 없었다.
+  - mise 8개 전부 설치 확인(rg 15.2.0, fd 10.5.2, bat 0.26.1, eza 0.23.5, lazygit 0.66.3,
+    zoxide 0.10.0, neovim 0.12.6, tree-sitter 0.26.13). mise.lock 변경 없음.
+  - `:Lazy! restore` → `:TSUpdate`(13/13). lazy-lock.json 해시 전후 동일.
+  - jsonc 파서 제거. `require('nvim-treesitter').uninstall('jsonc')` 는
+    "unsupported language" 로 거부당한다(신버전이 지원 목록에서 뺐다).
+    `site/parser/jsonc.so` 와 `site/parser-info/jsonc.revision` 을 직접 지웠다.
+  - mason 의 tree-sitter-cli 제거 후 checkhealth 가 mise 의 0.26.13 을 잡는다.
+    mason 패키지 최신화(clangd 21.1.0 → 23.1.0).
+  - headless 에서 mason/treesitter 명령을 쓰려면 `Lazy load <플러그인>` 을 먼저 해야 한다.
+    `:MasonUninstall`, `:checkhealth nvim-treesitter` 모두 로드 전에는 없는 명령이다.
+    mason 에는 `check_new_version` API 가 없다. `install()` 이 최신으로 재설치하는 방식이다.
+  - 검증: LSP 5종 연결, jsonc→json 파서 하이라이트, t32 로드, zoxide DB 383 유지,
+    lazygit TUI, WSL 클립보드(nvim → win32yank → Windows) 모두 정상.

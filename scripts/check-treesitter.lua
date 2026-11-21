@@ -8,6 +8,10 @@
 -- 3) 인자로 준 파일을 열어 filetype → 파서 → 하이라이트가 실제로 켜지는지 본다.
 -- 끝나면 "TREESITTER OK" 또는 "TREESITTER FAIL (n)" 을 출력하고 종료 코드로도 알린다.
 
+-- 세션(persistence)을 저장하지 않는다. 이게 없으면 종료할 때 실행한 디렉토리의 세션을
+-- 샘플 파일 목록으로 덮어쓴다(2026-11-21 노트북 ~/dotfiles 세션 유실).
+pcall(function() require("persistence").stop() end)
+
 local out, fails = {}, 0
 local function say(s) table.insert(out, s) end
 local function fail(s) fails = fails + 1; say("  FAIL " .. s) end

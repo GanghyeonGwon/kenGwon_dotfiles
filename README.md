@@ -101,6 +101,9 @@ nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 
 ## Yocto / BitBake (nvim)
 
 설정은 `nvim/.config/nvim/lua/plugins/yocto.lua` 하나다. 공식 도구만 쓴다.
+mason 이 nvim 을 열 때 자동으로 설치한다. 설치에는 node(npm)와 python3 + venv 모듈이 필요하다
+(Ubuntu 는 `python3-venv` 를 따로 깔아야 한다. 없으면 `spawn: python3 failed` 로만 실패한다).
+자동 설치가 도는 중에 `:MasonInstall` 을 겹쳐 부르면 `Package is already installing` 으로 깨진다.
 
 | 기능 | 도구 | 상태 |
 |---|---|---|
@@ -131,11 +134,13 @@ nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 
   평소 사용(attach, 분할, popup, resurrect 저장)에서는 이 명령을 쓰지 않는다.
   `@resurrect-capture-pane-contents` 는 켜지 않는다.
 
-- `scripts/check-treesitter.sh` 는 **실행한 디렉토리의 persistence 세션을 덮어쓴다.**
-  nvim 을 cwd 그대로 띄우기 때문에, 저장소 루트에서 돌리면 `~/dotfiles` 세션이
-  그때 열린 샘플 파일 목록으로 바뀐다(2026-11-21 노트북에서 실제로 날렸다).
-  당분간은 `cd /tmp` 하고 절대경로로 부르거나, 날아가도 되는 디렉토리에서 돌린다.
-  근본 수정은 스크립트 맨 위에 `pcall(function() require('persistence').stop() end)` 를 넣는 것이다.
+- **headless/스크립트로 띄운 nvim 도 종료할 때 그 디렉토리의 persistence 세션을 덮어쓴다.**
+  persistence 는 파일을 연 nvim 이 끝날 때(VimLeavePre) 현재 디렉토리 세션을 저장하기 때문이다.
+  2026-11-21 에 이걸로 세션 2개를 날렸다(빌드서버 `sw_module/eyeTune`: 검증용 headless 실행,
+  노트북 `~/dotfiles`: `check-treesitter.sh`). 세션은 백업이 없어 되살릴 수 없다.
+  - `scripts/check-treesitter.sh` 는 고쳤다(맨 위에서 `persistence.stop()`). 성공·실패 경로 모두 세션이 그대로인 것을 확인했다.
+  - 직접 headless nvim 을 돌릴 때는 맨 앞에서 `lua pcall(function() require('persistence').stop() end)` 를 실행하거나,
+    날아가도 되는 디렉토리(/tmp 등)에서 돌린다.
 
 ## PATH
 

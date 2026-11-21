@@ -68,10 +68,11 @@ split_horizontal = "prefix+\""
 # (herdr 기본값은 prefix+w 이지만 tmux 쪽 손버릇에 맞춘다)
 workspace_picker = "prefix+ctrl+w"
 
-# tmux: bind / switch-client -l
-# 근사치: tmux 는 "마지막에 쓰던" 세션으로 토글하지만
-#         herdr 의 previous_workspace 는 "순서상 이전" workspace 로 간다.
-previous_workspace = "prefix+slash"
+# workspace 순회 (herdr 기본값은 둘 다 unset)
+# tmux 의 switch-client -l(마지막 세션 토글) 같은 MRU 토글은 herdr 에 없다.
+# 대신 "순서상" 이전/다음 workspace 로 이동한다. 사이드바 목록 순서 기준이다.
+previous_workspace = "prefix+period"
+next_workspace     = "prefix+slash"
 
 # config 를 고친 뒤 실행 중인 세션에 반영 (herdr 기본값, 명시적으로 남김)
 reload_config = "prefix+shift+r"

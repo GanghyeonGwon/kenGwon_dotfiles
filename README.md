@@ -98,6 +98,32 @@ nvim 의 하이라이트, 들여쓰기, 접기, `]f`/`vaf` 같은 코드 단위 
 - `.dts`, Makefile, Kconfig, `.S`, `.cmm`: 대충이라도 구분돼서 칠해지는지
 - `:Inspect` 를 커서 위에서 실행하면 그 글자에 붙은 하이라이트 그룹을 볼 수 있다.
 
+## Yocto / BitBake (nvim)
+
+설정은 `nvim/.config/nvim/lua/plugins/yocto.lua` 하나다. 공식 도구만 쓴다.
+
+| 기능 | 도구 | 상태 |
+|---|---|---|
+| 하이라이트 | tree-sitter `bitbake` 파서 | 됨 |
+| 자동완성, 변수 문서(`K`) | `language-server-bitbake`(Yocto 공식 LSP, mason) | 됨 |
+| 레시피 검사 | `oelint-adv`(mason) + nvim-lint. 열 때·저장할 때. info 수준은 숨김 | 됨 |
+| `inherit`/`require`/레시피 정의로 이동 | — | **안 됨.** 공식 LSP 가 VS Code 확장의 프로젝트 스캔에 의존한다 |
+| 변수의 최종 값 hover | — | 안 됨. 같은 이유. 아래 `bitbake -e` 로 본다 |
+
+정의 이동은 [vscode-bitbake#380](https://github.com/yoctoproject/vscode-bitbake/issues/380) 에서 진행 중이다
+(메인테이너: "neovim 개선이 다음 순서"). 지원되면 mason 에서 서버만 업데이트하면 된다.
+
+대신 쓰는 방법(빌드 환경을 source 한 셸에서):
+- **변수가 어디서 어떻게 정해졌나** — 이게 bitbake 의 진짜 "정의로 이동"이다. 레이어·bbappend·override 를 다 거친 결과다.
+  `bitbake -e <레시피> > /tmp/<레시피>.env` 를 nvim 으로 열고 `/^# \$SRC_URI` 로 찾는다.
+  변수마다 `#   set /경로/foo.bb:12`, `#   :append /경로/foo.bbappend:3` 같은 대입 이력이 있고, 그 줄에서 `gF` 로 바로 간다.
+  최종 값은 이력 아래 `SRC_URI="..."` 줄이다.
+- **bbappend / 레시피 위치**: `bitbake-layers show-appends`, `bitbake-layers show-recipes -f <이름>`
+- **inherit/require 대상 파일**: 파일 picker(`<leader><space>`)로 `kernel.bbclass` 처럼 찾는다.
+- **빌드 실패**: `tmp/work/<arch>/<레시피>/<버전>/temp/log.do_<task>` 와 실행된 스크립트 `run.do_<task>` 를 nvim 으로 연다.
+  손으로 고쳐 보려면 `bitbake -c devshell <레시피>`, 소스를 계속 고칠 거면 `devtool modify <레시피>`.
+- `bitbake` 는 빌드 디렉토리에 잠금 파일을 잡는다. 빌드가 도는 중에는 `bitbake -e` 가 기다리거나 실패한다.
+
 ## 알려진 문제
 
 - 빌드서버의 시스템 tmux(`tmux-3.3a-13.20230918git…el10`, `tmux -V` = next-3.4)는 `tmux capture-pane` 을

@@ -20,6 +20,21 @@ bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서�
 | 2. mise | GitHub 릴리즈 바이너리 (rg, fd, bat, eza, lazygit, zoxide, neovim) | `~/.local/share/mise` | `mise/.config/mise/config.toml` 버전 수정 → `mise install` → `mise lock --global` → 커밋 |
 | 3. stow | 직접 빌드하거나 rpm 을 푼 것 | `~/.local/stow/<이름-버전>`, 원본은 `~/.local/_tarball` | 새 버전 디렉토리 stow, 이전 버전 `stow -D` |
 
+### `~/.local` 디렉토리 역할
+
+| 경로 | 용도 |
+|---|---|
+| `bin/` | 실행 파일과 링크만 둔다. 소스나 빌드 트리를 두지 않는다 |
+| `stow/<이름-버전>/` | 3층 패키지. 여기 있는 패키지는 전부 stow 된 상태를 유지한다 (`stow -n -v <pkg>` → 할 일 없음) |
+| `src/` | 소스·빌드 트리. 재빌드하거나 `install_manifest.txt` 를 볼 때 쓴다. 런타임에는 쓰지 않는다 |
+| `_tarball/` | 받은 원본 (tar.gz, rpm, 단일 바이너리) |
+| `_retired/<날짜>/` | 정리하면서 치운 것과 롤백 스크립트·메모 |
+
+3층 설치 절차 (예: `make install`):
+`./configure --prefix=$HOME/.local/stow/foo-1.2` → `make install` → `stow --no-folding -d ~/.local/stow -t ~/.local foo-1.2`.
+rpm 은 `rpm2cpio x.rpm | cpio -id` 로 푼 `usr/` 아래 내용을 `~/.local/stow/<이름-버전>/` 에 넣는다.
+stow 디렉토리 바로 아래에 풀지 않는다(예전에 `stow/bin` 같은 가짜 패키지가 생긴 원인이다).
+
 - 스스로 업데이트하는 툴을 stow/mise 에 넣지 않는다. 버전 디렉토리 안의 파일이 제자리에서 새 버전으로
   덮여 버전 표기와 롤백이 깨진다. herdr 0.9.5 로 실측했다(`scripts/install-herdr.sh` 주석 참고).
 - mise 버전은 `config.toml` 에, 체크섬은 `mise.lock` 에 고정된다. 노트북과 빌드서버가 같은 선언을 쓴다.
@@ -40,3 +55,10 @@ bash / tmux / nvim / herdr / mise 설정. root 권한 없이 `$HOME` 안에서�
   옛 `~/.local/bin/squashfs-root` 는 실행 중인 nvim 이 런타임 파일을 계속 읽기 때문에 그 자리에 두었다.
   옛 nvim 이 모두 종료된 뒤 `~/.local/_retired/20261121/RETIRE_NVIM_APPIMAGE.sh` 로 치운다
   (사용 중인 프로세스가 있으면 스스로 거부한다).
+- 2026-11-21: `~/.local` 구조를 정리했다.
+  - 소스·빌드 트리(Bear, lua, luarocks, autojump, ghostscript, stow)를 `bin/` 에서 `src/` 로 옮겼다.
+  - 흩어져 설치돼 있던 lua, luarocks, bear, ghostscript 를 stow 패키지로 이관했다(기능 테스트 결과 전후 동일).
+  - `stow/{bin,lib,share}` 에 섞여 있던 rpm 내용물을 `lz4-1.9.4`, `rpcgen-1.4` 패키지로 분리했다.
+  - `~/.local/bin/stow` 를 `stow-2.4.1` 패키지로 연결했다.
+  - 상세 내용과 롤백 방법은 `~/.local/_retired/20261121/ROLLBACK_LOCAL_LAYOUT.md` 에 있다.
+- herdr 롤백: `scripts/install-herdr.sh --offline ~/.local/_tarball/herdr-<이전버전>-linux-x86_64`

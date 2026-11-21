@@ -3,7 +3,13 @@
 git:
   # diff 를 delta 로 그린다(git 쪽 delta 설정 ~/.config/git/config 의 [delta] 를 그대로 쓴다).
   # | 키로 렌더러를 바꿔 가며 볼 수 있다. 두 번째는 git 기본 diff.
+  #
+  # delta 가 없을 때를 ~/.config/git/config 의 core.pager 와 같은 방식으로 막는다.
+  # lazygit 은 command 를 sh 로 실행하므로 git 쪽과 같은 패턴을 쓸 수 있다.
+  # 이게 없으면 delta 미설치 머신에서 diff 패널에 diff 대신
+  # "sh: line 1: delta: command not found" 만 뜨고, 사용자가 매번 | 를 눌러
+  # 두 번째 렌더러로 바꿔야 한다(lazygit 은 목록의 첫 번째를 기본으로 쓴다).
   diffRenderers:
-    - command: delta --{{colorScheme}} --paging=never
+    - command: command -v delta >/dev/null 2>&1 && exec delta --{{colorScheme}} --paging=never || exec cat
     - type: rawGit
       name: default
